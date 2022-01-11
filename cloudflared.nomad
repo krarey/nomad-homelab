@@ -1,4 +1,4 @@
-job "cloudflare-tunnnel" {
+job "cloudflare-tunnel" {
   datacenters = ["byb"]
   type        = "system"
 

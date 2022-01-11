@@ -112,7 +112,6 @@ scrape_configs:
         replacement: $${1}:$${2}
         target_label: __address__
   - job_name: "node_exporter"
-    metrics_path: "/metrics"
     consul_sd_configs:
       - server: "consul.service.consul:8501"
         scheme: "https"
@@ -121,6 +120,15 @@ scrape_configs:
           ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
         services:
           - "prom-node-exporter"
+  - job_name: "cloudflare_tunnel"
+    consul_sd_configs:
+      - server: "consul.service.consul:8501"
+        scheme: "https"
+        datacenter: "byb"
+        tls_config:
+          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
+        services:
+          - "cloudflare-tunnel"
 EOH
         change_mode   = "signal"
         change_signal = "SIGHUP"
