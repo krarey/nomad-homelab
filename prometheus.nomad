@@ -111,6 +111,16 @@ scrape_configs:
         regex: (.+);(\d+)
         replacement: $${1}:$${2}
         target_label: __address__
+  - job_name: "node_exporter"
+    metrics_path: "/metrics"
+    consul_sd_configs:
+      - server: "consul.service.consul:8501"
+        scheme: "https"
+        datacenter: "byb"
+        tls_config:
+          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
+        services:
+          - "prom-node-exporter"
 EOH
         change_mode   = "signal"
         change_signal = "SIGHUP"
