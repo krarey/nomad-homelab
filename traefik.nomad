@@ -69,14 +69,14 @@ job "traefik" {
               exposedByDefault: false
               connectAware: true
               connectByDefault: true
-          certificatesResolvers:
-            le-staging:
-              acme:
-                email: kyle@opt.sh
-                storage: acme.json
-                caServer: https://acme-staging-v02.api.letsencrypt.org/directory
-                httpChallenge:
-                  entrypoint: web
+          # certificatesResolvers:
+          #   le-staging:
+          #     acme:
+          #       email: kyle@opt.sh
+          #       storage: acme.json
+          #       caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+          #       httpChallenge:
+          #         entrypoint: web
         EOF
       }
 
