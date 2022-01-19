@@ -10,7 +10,7 @@ capability {
 
 mount_options {
   fs_type     = "nfs"
-  mount_flags = ["nfsvers=4.1"]
+  mount_flags = ["nfsvers=4.1", "soft"]
 }
 
 parameters {
