@@ -4,9 +4,6 @@ job "prometheus" {
   group "prometheus" {
     network {
       mode = "bridge"
-      port "http" {
-        to = 9090
-      }
     }
 
     volume "synology" {
@@ -15,6 +12,26 @@ job "prometheus" {
       read_only       = false
       access_mode     = "multi-node-single-writer"
       attachment_mode = "file-system"
+    }
+
+    service {
+      name = "prometheus"
+      port = 9090
+      tags = [
+        "traefik.enable=true",
+        "traefik.http.routers.prom.rule=Host(`prometheus.service.consul`)"
+      ]
+      check {
+        name     = "Prometheus HTTP Probe"
+        expose   = true
+        type     = "http"
+        path     = "/-/healthy"
+        interval = "3s"
+        timeout  = "1s"
+      }
+      connect {
+        sidecar_service {}
+      }
     }
 
     task "prometheus" {
@@ -138,17 +155,6 @@ EOH
       resources {
         cpu    = 500
         memory = 256
-      }
-
-      service {
-        name = "prometheus"
-        port = "http"
-        check {
-          type     = "http"
-          path     = "/-/healthy"
-          interval = "3s"
-          timeout  = "1s"
-        }
       }
     }
   }
