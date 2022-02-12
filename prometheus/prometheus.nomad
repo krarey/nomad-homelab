@@ -4,6 +4,9 @@ job "prometheus" {
   group "prometheus" {
     network {
       mode = "bridge"
+      port "prometheus" {
+        static = 9090
+      }
     }
 
     volume "synology" {

@@ -4,14 +4,39 @@ job "grafana" {
   group "grafana" {
     network {
       mode = "bridge"
-      port "http" {
-        to = 3000
+      port "metrics" {
+        to = 9102
       }
     }
 
     service {
       name = "grafana"
-      port = "http"
+      port = 3000
+      tags = [
+        "traefik.enable=true",
+        "traefik.http.routers.grafana.rule=Host(`grafana.service.consul`)"
+      ]
+      meta {
+        metrics_port = NOMAD_HOST_PORT_metrics
+      }
+      check {
+        name     = "Grafana HTTP Probe"
+        expose   = true
+        type     = "http"
+        path     = "/api/health"
+        interval = "5s"
+        timeout  = "1s"
+      }
+      connect {
+        sidecar_service {
+          proxy {
+            upstreams {
+              destination_name = "prometheus"
+              local_bind_port  = 9090
+            }
+          }
+        }
+      }
     }
 
     task "grafana" {
