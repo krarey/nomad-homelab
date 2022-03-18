@@ -63,93 +63,9 @@ job "prometheus" {
       }
 
       template {
-        data          = <<EOH
----
-global:
-  scrape_interval: 30s
-  evaluation_interval: 3s
-scrape_configs:
-  - job_name: prometheus
-    static_configs:
-      - targets:
-        - 0.0.0.0:9090
-  - job_name: "nomad_server"
-    metrics_path: "/v1/metrics"
-    scheme: "https"
-    params:
-      format:
-        - "prometheus"
-    tls_config:
-      ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-      server_name: "server.global.nomad"
-    consul_sd_configs:
-      - server: "consul.service.consul:8501"
-        scheme: "https"
-        datacenter: "byb"
-        services:
-          - "nomad"
-        tags:
-          - "http"
-        tls_config:
-          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-  - job_name: "nomad_client"
-    metrics_path: "/v1/metrics"
-    scheme: "https"
-    params:
-      format:
-        - "prometheus"
-    tls_config:
-      ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-      server_name: "client.global.nomad"
-    consul_sd_configs:
-      - server: "consul.service.consul:8501"
-        scheme: "https"
-        datacenter: "byb"
-        services:
-          - "nomad-client"
-        tls_config:
-          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-  - job_name: envoy_metrics
-    consul_sd_configs:
-      - server: "consul.service.consul:8501"
-        scheme: "https"
-        datacenter: "byb"
-        tls_config:
-          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-    relabel_configs:
-      - source_labels:
-          - __meta_consul_service
-        action: drop
-        regex: (.+)-sidecar-proxy
-      - source_labels:
-          - __meta_consul_service_metadata_metrics_port
-        action: keep
-        regex: (.+)
-      - source_labels:
-          - __meta_consul_address
-          - __meta_consul_service_metadata_metrics_port
-        regex: (.+);(\d+)
-        replacement: $${1}:$${2}
-        target_label: __address__
-  - job_name: "node_exporter"
-    consul_sd_configs:
-      - server: "consul.service.consul:8501"
-        scheme: "https"
-        datacenter: "byb"
-        tls_config:
-          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-        services:
-          - "prom-node-exporter"
-  - job_name: "cloudflare_tunnel"
-    consul_sd_configs:
-      - server: "consul.service.consul:8501"
-        scheme: "https"
-        datacenter: "byb"
-        tls_config:
-          ca_file: "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-        services:
-          - "cloudflare-tunnel"
-EOH
+        data          = <<-EOH
+        {{ key "prometheus/config" }}
+        EOH
         change_mode   = "signal"
         change_signal = "SIGHUP"
         destination   = "local/config/prometheus.yml"
