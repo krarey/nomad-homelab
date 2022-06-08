@@ -11,9 +11,9 @@ job "prometheus" {
 
     volume "synology" {
       type            = "csi"
-      source          = "prometheus"
+      source          = "prometheus-iscsi"
       read_only       = false
-      access_mode     = "multi-node-single-writer"
+      access_mode     = "single-node-writer"
       attachment_mode = "file-system"
     }
 
@@ -37,6 +37,27 @@ job "prometheus" {
       }
     }
 
+    task "storage_init" {
+      driver = "docker"
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+      config {
+        image   = "docker.io/library/alpine:latest"
+        command = "/bin/sh"
+        args = [
+          "-c",
+          "chown -R 65534:65534 /prometheus"
+        ]
+      }
+      volume_mount {
+        volume      = "synology"
+        destination = "/prometheus"
+        read_only   = false
+      }
+
+    }
     task "prometheus" {
       driver = "docker"
       config {
@@ -63,9 +84,7 @@ job "prometheus" {
       }
 
       template {
-        data          = <<-EOH
-        {{ key "prometheus/config" }}
-        EOH
+        data          = "{{ key \"prometheus/config\" }}"
         change_mode   = "signal"
         change_signal = "SIGHUP"
         destination   = "local/config/prometheus.yml"
