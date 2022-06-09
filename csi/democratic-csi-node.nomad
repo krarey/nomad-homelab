@@ -53,17 +53,11 @@ synology:
   volume: /volume1
 iscsi:
   targetPortal: foundation.byb.lan
-  interface: ""
   baseiqn: "iqn.2000-01.com.synology:csi."
-  # MUST ensure uniqueness
-  # full iqn limit is 223 bytes, plan accordingly
-  namePrefix: ""
-  nameSuffix: ""
   lunTemplate:
     type: "BLUN"
   lunSnapshotTemplate:
     is_locked: true
-    # https://kb.synology.com/en-me/DSM/tutorial/What_is_file_system_consistent_snapshot
     is_app_consistent: true
   targetTemplate:
     auth_type: 0
