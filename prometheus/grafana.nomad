@@ -34,6 +34,10 @@ job "grafana" {
               destination_name = "prometheus"
               local_bind_port  = 9090
             }
+            upstreams {
+              destination_name = "loki"
+              local_bind_port = 3100
+            }
           }
         }
       }
@@ -42,8 +46,7 @@ job "grafana" {
     task "grafana" {
       driver = "docker"
       config {
-        image = "grafana/grafana:8.3.3"
-        ports = ["http"]
+        image = "grafana/grafana:9.0.2"
       }
 
       resources {

@@ -38,6 +38,7 @@ job "democratic-node" {
       template {
         destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
 
+        # TODO: Presumably the node shouldn't need access to the Synology API. See if this can be cut down.
         data = <<EOH
 driver: synology-iscsi
 httpConnection:
@@ -72,8 +73,8 @@ EOH
       }
 
       resources {
-        cpu    = 30
-        memory = 50
+        cpu    = 100
+        memory = 128
       }
     }
   }

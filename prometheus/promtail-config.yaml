@@ -1,0 +1,47 @@
+---
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/promtail-positions.yaml
+
+clients:
+  - url: http://loki.service.consul/loki/api/v1/push
+
+scrape_configs:
+- job_name: journald
+  journal:
+    path: /run/log/journal
+    labels:
+      job: systemd-journal
+  relabel_configs:
+    - source_labels: ['__journal__systemd_unit']
+      target_label: 'unit'
+- job_name: 'nomad-logs'
+  consulagent_sd_configs:
+    - server: '127.0.0.1:8500'
+  relabel_configs:
+    - source_labels: [__meta_consulagent_service]
+      action: drop
+      regex: '.+-sidecar-proxy'
+    - source_labels: [__meta_consulagent_service_id]
+      action: keep
+      regex: '^_nomad-task-.*'
+    - source_labels: [__meta_consulagent_node]
+      target_label: __host__
+    - source_labels: [__meta_consulagent_service_metadata_external_source]
+      target_label: source
+    - source_labels: [__meta_consulagent_service_id]
+      regex: '_nomad-task-([a-z0-9]*-[a-z0-9]*-[a-z0-9]*-[a-z0-9]*-[a-z0-9]*).*'
+      target_label:  'task_id'
+      replacement: '$1'
+    - source_labels: [__meta_consulagent_service]
+      target_label: job
+    - source_labels: ['__meta_consulagent_node']
+      target_label:  'instance'
+    - source_labels: [__meta_consulagent_service_id]
+      regex: '_nomad-task-([a-z0-9]*-[a-z0-9]*-[a-z0-9]*-[a-z0-9]*-[a-z0-9]*).*'
+      target_label:  '__path__'
+      replacement: '/var/lib/nomad/alloc/$1/alloc/logs/*std*.{?,??}'
