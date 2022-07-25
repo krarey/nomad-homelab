@@ -1,28 +1,32 @@
 job "acemulator" {
   datacenters = ["x86"]
 
-  group "acemulator" {
+  vault {
+    policies      = ["acemulator"]
+    change_mode   = "signal"
+    change_signal = "SIGHUP"
+  }
+
+  group "mariadb" {
     network {
       mode = "bridge"
-      port "game1" {
-        static = 9000
-        to     = 9000
+      port "metrics" {
+        to = 9102
       }
-      port "game2" {
-        static = 9001
-        to     = 9001
+      port "mysql" {
+        to = 3306 # Keeping this open for external management tools
       }
-    }
-
-    vault {
-      policies      = ["acemulator"]
-      change_mode   = "signal"
-      change_signal = "SIGHUP"
     }
 
     service {
-      name = "acemulator"
-      port = 9000
+      name = "mariadb"
+      port = 3306
+      connect {
+        sidecar_service {}
+      }
+      meta {
+        metrics_port = NOMAD_HOST_PORT_metrics
+      }
     }
 
     // Just going to use host mounts here, the targeted DC only has a single host
@@ -32,31 +36,8 @@ job "acemulator" {
       source = "ace_db"
     }
 
-    // This isn't containerized well, so stateful directories are mixed up with containerized app data
-    // So we need a bunch of distinct path mounts to underlying storage.
-    volume "ace_config" {
-      type   = "host"
-      source = "ace_config"
-    }
-    volume "ace_content" {
-      type   = "host"
-      source = "ace_content"
-    }
-    volume "ace_dats" {
-      type   = "host"
-      source = "ace_dats"
-    }
-    volume "ace_logs" {
-      type   = "host"
-      source = "ace_logs"
-    }
-
     task "mariadb" {
       driver = "docker"
-      lifecycle {
-        hook    = "prestart"
-        sidecar = true
-      }
       env {
         MYSQL_USER     = "acedockeruser"
         MYSQL_DATABASE = "ace%"
@@ -78,6 +59,80 @@ EOH
       volume_mount {
         volume      = "ace_db"
         destination = "/var/lib/mysql"
+      }
+    }
+  }
+
+  group "acemulator" {
+    network {
+      mode = "bridge"
+      port "game1" {
+        static = 9000
+        to     = 9000
+      }
+      port "game2" {
+        static = 9001
+        to     = 9001
+      }
+      port "metrics" {
+        to = 9102
+      }
+    }
+
+    service {
+      name = "acemulator"
+      port = 9000
+      connect {
+        sidecar_service {
+          proxy {
+            upstreams {
+              destination_name = "mariadb"
+              local_bind_port  = 3306
+            }
+          }
+        }
+      }
+      meta {
+        metrics_port = NOMAD_HOST_PORT_metrics
+      }
+    }
+
+    // This isn't containerized well, so stateful directories are mixed up with containerized app data
+    // So we need a bunch of distinct path mounts to underlying storage.
+    volume "ace_config" {
+      type   = "host"
+      source = "ace_config"
+    }
+    volume "ace_content" {
+      type   = "host"
+      source = "ace_content"
+    }
+    volume "ace_dats" {
+      type   = "host"
+      source = "ace_dats"
+    }
+    volume "ace_logs" {
+      type   = "host"
+      source = "ace_logs"
+    }
+
+    task "await-mariadb-service" {
+      driver = "docker"
+
+      config {
+        image   = "busybox:1.35"
+        command = "sh"
+        args    = ["-c", "echo -n 'Waiting for service'; until nslookup mariadb.service.consul 2>&1 >/dev/null; do echo '.'; sleep 2; done"]
+      }
+
+      resources {
+        cpu    = 200
+        memory = 100
+      }
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
       }
     }
 
