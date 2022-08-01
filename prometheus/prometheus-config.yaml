@@ -65,6 +65,10 @@ scrape_configs:
         regex: (.+);(\d+)
         replacement: ${1}:${2}
         target_label: __address__
+  - job_name: envoy_metrics_self
+    static_configs:
+      - targets:
+        - 127.0.0.1:9102
   - job_name: "node_exporter"
     consul_sd_configs:
       - server: "consul.service.consul:8501"
