@@ -4,9 +4,6 @@ job "loki" {
   group "loki" {
     network {
       mode = "bridge"
-      port "grpc" {
-        to = 9095
-      }
     }
 
     volume "synology" {

@@ -4,6 +4,8 @@ job "prometheus" {
   group "prometheus" {
     network {
       mode = "bridge"
+      # Exposed for Consul metrics proxy, which doesn't pass HTTP Host header
+      # Otherwise this could be removed and metrics queried via Traefik ingress
       port "prometheus" {
         static = 9090
       }
