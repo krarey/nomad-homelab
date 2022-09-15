@@ -5,18 +5,32 @@ job "valheim" {
     network {
       mode = "bridge"
       port "game1" {
-        static = 2456
-        to     = 2456
+        to = 2456
       }
       port "game2" {
-        static = 2457
-        to     = 2457
+        to = 2457
       }
     }
 
     service {
       name = "valheim"
-      port = 2456
+      port = "game1"
+      tags = ["game1"]
+      # Port-forward hinting for Consul-Terraform Sync
+      meta {
+        unifi-port-forward = "2456"
+        unifi-proto        = "udp"
+      }
+    }
+
+    service {
+      name = "valheim"
+      port = "game2"
+      tags = ["game2"]
+      meta {
+        unifi-port-forward = "2457"
+        unifi-proto        = "udp"
+      }
     }
 
     volume "valheim_data" {
