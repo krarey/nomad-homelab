@@ -47,11 +47,25 @@ job "grafana" {
       driver = "docker"
       config {
         image = "grafana/grafana:9.0.2"
+        volumes = [
+          "local/config/grafana.ini:/etc/grafana/grafana.ini",
+        ]
       }
 
       resources {
         cpu    = 200
         memory = 256
+      }
+
+            template {
+        data = <<EOH
+[feature_toggles]
+enable = tempoSearch tempoBackendSearch
+EOH
+
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
+        destination   = "local/config/grafana.ini"
       }
     }
   }
