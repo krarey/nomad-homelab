@@ -59,7 +59,7 @@ job "valheim" {
       }
       resources {
         cpu    = 6000
-        memory = 4096
+        memory = 8192
       }
       template {
         data        = <<-EOT

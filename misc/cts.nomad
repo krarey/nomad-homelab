@@ -14,7 +14,7 @@ job "consul-terraform-sync" {
     task "agent" {
       driver = "docker"
       config {
-        image = "hashicorp/consul-terraform-sync:0.6.0"
+        image = "hashicorp/consul-terraform-sync:0.7.0"
         args = [
           "consul-terraform-sync",
           "start",
@@ -62,7 +62,6 @@ job "consul-terraform-sync" {
       template {
         destination = "${NOMAD_SECRETS_DIR}/cts.hcl"
         data        = <<-EOT
-          log_level = "DEBUG"
           port = {{ env "NOMAD_PORT_cts" }}
           consul {
             address = "unix://{{ env "NOMAD_SECRETS_DIR" }}/consul/consul.sock"
