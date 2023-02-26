@@ -110,6 +110,12 @@ job "traefik" {
                 defaultCertificate:
                   certFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-bundle.pem
                   keyFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-key.pem
+          http:
+            middlewares:
+              redirect-https:
+                redirectScheme:
+                  scheme: https
+                  permanent: true
         EOF
       }
 

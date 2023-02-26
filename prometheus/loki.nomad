@@ -19,7 +19,8 @@ job "loki" {
       port = 3100
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.loki.rule=Host(`loki.service.consul`)"
+        "traefik.http.routers.loki-tls.tls=true",
+        "traefik.http.routers.loki.middlewares=redirect-https@file"
       ]
       check {
         name     = "Loki HTTP Probe"

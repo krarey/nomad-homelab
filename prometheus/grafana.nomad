@@ -14,7 +14,8 @@ job "grafana" {
       port = 3000
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.grafana.rule=Host(`grafana.service.consul`)"
+        "traefik.http.routers.grafana-tls.tls=true",
+        "traefik.http.routers.grafana.middlewares=redirect-https@file"
       ]
       meta {
         metrics_port = NOMAD_HOST_PORT_metrics

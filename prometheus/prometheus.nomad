@@ -24,7 +24,8 @@ job "prometheus" {
       port = 9090
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.prom.rule=Host(`prometheus.service.consul`)"
+        "traefik.http.routers.prometheus-tls.tls=true",
+        "traefik.http.routers.prometheus.middlewares=redirect-https@file"
       ]
       check {
         name     = "Prometheus HTTP Probe"

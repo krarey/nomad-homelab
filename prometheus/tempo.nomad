@@ -27,8 +27,9 @@ job "tempo" {
       port = "http"
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.tempo.rule=Host(`tempo.service.consul`)",
-        "traefik.consulcatalog.connect=false",
+        "traefik.http.routers.tempo-tls.tls=true",
+        "traefik.http.routers.tempo.middlewares=redirect-https@file",
+        "traefik.consulcatalog.connect=false"
       ]
     }
 
