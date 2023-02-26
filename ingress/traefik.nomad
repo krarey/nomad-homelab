@@ -53,27 +53,27 @@ job "traefik" {
         destination   = "${NOMAD_SECRETS_DIR}/wildcard-bundle.pem"
         change_mode   = "signal"
         change_signal = "SIGHUP"
-        data          = <<-EOF
+        data          = <<-EOT
           {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
           {{ .Data.certificate }}
           {{ .Data.issuing_ca }}{{ end }}
-        EOF
+        EOT
       }
 
       template {
         destination   = "${NOMAD_SECRETS_DIR}/wildcard-key.pem"
         change_mode   = "signal"
         change_signal = "SIGHUP"
-        data          = <<-EOF
+        data          = <<-EOT
           {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
           {{ .Data.private_key }}{{ end }}
-        EOF
+        EOT
       }
 
 
       template {
         destination = "${NOMAD_TASK_DIR}/traefik.yml"
-        data        = <<-EOF
+        data        = <<-EOT
           api:
             insecure: true
           entryPoints:
@@ -96,14 +96,14 @@ job "traefik" {
               exposedByDefault: false
               prefix: traefik
               stale: true
-        EOF
+        EOT
       }
 
       template {
         destination   = "${NOMAD_TASK_DIR}/dynamic-config.yaml"
         change_mode   = "signal"
         change_signal = "SIGHUP"
-        data          = <<-EOF
+        data          = <<-EOT
           tls:
             stores:
               default:
@@ -116,7 +116,7 @@ job "traefik" {
                 redirectScheme:
                   scheme: https
                   permanent: true
-        EOF
+        EOT
       }
 
       vault {

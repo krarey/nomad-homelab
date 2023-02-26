@@ -23,7 +23,7 @@ job "consul-esm" {
 
       config {
         image = "hashicorp/consul-esm:0.6.0"
-        args = ["-config-file=${NOMAD_SECRETS_DIR}/consul-esm.hcl"]
+        args  = ["-config-file=${NOMAD_SECRETS_DIR}/consul-esm.hcl"]
       }
 
       resources {
@@ -43,15 +43,15 @@ job "consul-esm" {
 
       template {
         destination = "secrets/consul-esm.hcl"
-        data        = <<EOF
-// The address of the local Consul agent. Can also be provided through the
-// CONSUL_HTTP_ADDR environment variable.
-http_addr = "unix://{{ env "NOMAD_SECRETS_DIR" }}/consul/consul.sock"
+        data        = <<-EOT
+          // The address of the local Consul agent. Can also be provided through the
+          // CONSUL_HTTP_ADDR environment variable.
+          http_addr = "unix://{{ env "NOMAD_SECRETS_DIR" }}/consul/consul.sock"
 
-// The ACL token to use when communicating with the local Consul agent. Can
-// also be provided through the CONSUL_HTTP_TOKEN environment variable.
-token = "{{ with secret "consul/creds/consul-esm" }}{{ .Data.token }}{{ end }}"
-EOF
+          // The ACL token to use when communicating with the local Consul agent. Can
+          // also be provided through the CONSUL_HTTP_TOKEN environment variable.
+          token = "{{ with secret "consul/creds/consul-esm" }}{{ .Data.token }}{{ end }}"
+        EOT
       }
     }
   }

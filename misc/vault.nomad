@@ -108,35 +108,35 @@ job "vault" {
 
       template {
         destination = "local/vault.hcl"
-        data        = <<-EOF
-        api_addr      = "https://safe.opt.sh"
-        cluster_addr  = "https://{{ env "NOMAD_ADDR_cluster" }}"
-        disable_mlock = true
-        ui            = true
+        data        = <<-EOT
+          api_addr      = "https://safe.opt.sh"
+          cluster_addr  = "https://{{ env "NOMAD_ADDR_cluster" }}"
+          disable_mlock = true
+          ui            = true
 
-        listener "tcp" {
-          address         = "127.0.0.1:8200"
-          cluster_address = "0.0.0.0:8202"
-          tls_disable     = true
-        }
-
-        storage "raft" {
-          path    = "/raft"
-          node_id = "{{ env "node.unique.name" }}"
-
-          retry_join {
-            leader_api_addr = "http://127.0.0.1:9200"
+          listener "tcp" {
+            address         = "127.0.0.1:8200"
+            cluster_address = "0.0.0.0:8202"
+            tls_disable     = true
           }
-        }
 
-        seal "transit" {
-          address         = "https://vault.service.consul:8200"
-          disable_renewal = "true"
-          mount_path      = "safe-seal/"
-          key_name        = "safe-key"
-          tls_ca_cert     = "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
-        }
-        EOF
+          storage "raft" {
+            path    = "/raft"
+            node_id = "{{ env "node.unique.name" }}"
+
+            retry_join {
+              leader_api_addr = "http://127.0.0.1:9200"
+            }
+          }
+
+          seal "transit" {
+            address         = "https://vault.service.consul:8200"
+            disable_renewal = "true"
+            mount_path      = "safe-seal/"
+            key_name        = "safe-key"
+            tls_ca_cert     = "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
+          }
+        EOT
       }
 
       vault {

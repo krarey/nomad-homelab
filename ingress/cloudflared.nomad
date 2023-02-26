@@ -34,26 +34,26 @@ job "cloudflare-tunnel" {
 
       template {
         destination = "secrets/tunnel.json"
-        data        = <<-EOF
+        data        = <<-EOT
         {
           "AccountTag": "755a069db2dd82aaafcea6940be92ed1",
           "TunnelSecret": "{{ with secret "kv/cloudflare/nomad" }}{{ .Data.data.secret }}{{ end }}",
           "TunnelID": "267c5f44-0933-4077-bbf8-d1568b2d6624",
           "TunnelName": "nomad"
         }
-        EOF
+        EOT
       }
 
       template {
         destination = "local/config.yml"
-        data        = <<-EOF
+        data        = <<-EOT
         tunnel: 267c5f44-0933-4077-bbf8-d1568b2d6624
         credentials-file: {{ env "NOMAD_SECRETS_DIR" }}/tunnel.json
         metrics: 0.0.0.0:{{ env "NOMAD_PORT_metrics" }}
         no-autoupdate: true
         ingress:
           - service: http://localhost:80
-        EOF
+        EOT
       }
 
       vault {

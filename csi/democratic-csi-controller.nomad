@@ -29,31 +29,31 @@ job "democratic-controller" {
 
       template {
         destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
-        data        = <<EOH
-driver: synology-iscsi
-httpConnection:
-  protocol: https
-  host: foundation.byb.lan
-  port: 5001
-  username: nomad
-  password: "{{ with secret "kv/csi_iscsi" }}{{ .Data.data.password }}{{ end }}"
-  allowInsecure: true
-  session: democratic-csi
-  serialize: true
-synology:
-  volume: /volume1
-iscsi:
-  targetPortal: foundation.byb.lan
-  baseiqn: "iqn.2000-01.com.synology:csi."
-  lunTemplate:
-    type: "BLUN"
-  lunSnapshotTemplate:
-    is_locked: true
-    is_app_consistent: true
-  targetTemplate:
-    auth_type: 0
-    max_sessions: 0
-EOH
+        data        = <<-EOT
+          driver: synology-iscsi
+          httpConnection:
+            protocol: https
+            host: foundation.byb.lan
+            port: 5001
+            username: nomad
+            password: "{{ with secret "kv/csi_iscsi" }}{{ .Data.data.password }}{{ end }}"
+            allowInsecure: true
+            session: democratic-csi
+            serialize: true
+          synology:
+            volume: /volume1
+          iscsi:
+            targetPortal: foundation.byb.lan
+            baseiqn: "iqn.2000-01.com.synology:csi."
+            lunTemplate:
+              type: "BLUN"
+            lunSnapshotTemplate:
+              is_locked: true
+              is_app_consistent: true
+            targetTemplate:
+              auth_type: 0
+              max_sessions: 0
+        EOT
       }
 
       vault {

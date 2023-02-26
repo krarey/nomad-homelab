@@ -58,11 +58,11 @@ job "grafana" {
         memory = 256
       }
 
-            template {
-        data = <<EOH
-[feature_toggles]
-enable = tempoSearch tempoBackendSearch
-EOH
+      template {
+        data = <<-EOT
+          [feature_toggles]
+          enable = tempoSearch tempoBackendSearch
+        EOT
 
         change_mode   = "signal"
         change_signal = "SIGHUP"

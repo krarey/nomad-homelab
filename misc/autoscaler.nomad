@@ -31,7 +31,7 @@ job "nomad-autoscaler" {
       driver = "docker"
       artifact {
         source      = "https://vault.service.consul:8200/v1/pki-root/ca/pem"
-        destination = "${nomad_task_dir}/ca.pem"
+        destination = "${NOMAD_TASK_DIR}/ca.pem"
         mode        = "file"
       }
       config {
@@ -40,39 +40,39 @@ job "nomad-autoscaler" {
         args = [
           "agent",
           "-config",
-          "${nomad_task_dir}/config.hcl"
+          "${NOMAD_TASK_DIR}/config.hcl"
         ]
         ports = ["http"]
       }
 
       template {
-        destination = "${nomad_task_dir}/config.hcl"
-        data        = <<eof
-nomad {
-  address = "https://nomad.service.consul:4646"
-  ca_cert = "{{ env "nomad_task_dir" }}/ca.pem"
-  token   = "{{ with secret "nomad/creds/autoscale" }}{{ .data.secret_id }}{{ end }}"
-}
+        destination = "${NOMAD_TASK_DIR}/config.hcl"
+        data        = <<-EOT
+          nomad {
+            address = "https://nomad.service.consul:4646"
+            ca_cert = "{{ env "NOMAD_TASK_DIR" }}/ca.pem"
+            token   = "{{ with secret "nomad/creds/autoscale" }}{{ .Data.secret_id }}{{ end }}"
+          }
 
-apm "prometheus" {
-  driver = "prometheus"
-  config = {
-    address = "http://localhost:9090"
-  }
-}
+          apm "prometheus" {
+            driver = "prometheus"
+            config = {
+              address = "http://localhost:9090"
+            }
+          }
 
-target "nomad" {
-  driver = "nomad-target"
-}
+          target "nomad" {
+            driver = "nomad-target"
+          }
 
-strategy "threshold" {
-  driver = "threshold"
-}
+          strategy "threshold" {
+            driver = "threshold"
+          }
 
-strategy "target-value" {
-  driver = "target-value"
-}
-eof
+          strategy "target-value" {
+            driver = "target-value"
+          }
+        EOT
       }
 
       resources {

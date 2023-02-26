@@ -49,10 +49,10 @@ job "acemulator" {
         memory = 512
       }
       template {
-        data        = <<EOH
-MYSQL_ROOT_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
-MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
-EOH
+        data        = <<-EOT
+          MYSQL_ROOT_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
+          MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
+        EOT
         destination = "${NOMAD_SECRETS_DIR}/mysql.env"
         env         = true
       }
@@ -163,9 +163,9 @@ EOH
         cpu    = 8600
       }
       template {
-        data        = <<EOH
-MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
-EOH
+        data        = <<-EOT
+          MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
+        EOT
         destination = "${NOMAD_SECRETS_DIR}/mysql.env"
         env         = true
       }
