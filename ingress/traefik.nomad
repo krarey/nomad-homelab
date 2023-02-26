@@ -1,5 +1,5 @@
 job "traefik" {
-  datacenters = ["byb"]
+  datacenters = ["byb", "x86"]
   type        = "system"
 
   group "traefik" {
@@ -37,7 +37,7 @@ job "traefik" {
       driver = "docker"
 
       config {
-        image        = "traefik:v2.8.0"
+        image = "traefik:v2.9.8"
         volumes = [
           "local/traefik.yml:/etc/traefik/traefik.yml",
         ]
@@ -45,31 +45,78 @@ job "traefik" {
 
       artifact {
         source      = "https://vault.service.consul:8200/v1/pki-root/ca/pem"
-        destination = "local/ca.pem"
+        destination = "${NOMAD_TASK_DIR}/ca.pem"
         mode        = "file"
       }
 
       template {
-        destination = "local/traefik.yml"
+        destination   = "${NOMAD_SECRETS_DIR}/wildcard-bundle.pem"
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
+        data          = <<-EOF
+          {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
+          {{ .Data.certificate }}
+          {{ .Data.issuing_ca }}{{ end }}
+        EOF
+      }
+
+      template {
+        destination   = "${NOMAD_SECRETS_DIR}/wildcard-key.pem"
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
+        data          = <<-EOF
+          {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
+          {{ .Data.private_key }}{{ end }}
+        EOF
+      }
+
+
+      template {
+        destination = "${NOMAD_TASK_DIR}/traefik.yml"
         data        = <<-EOF
+          api:
+            insecure: true
           entryPoints:
             web:
               address: ":80"
             websecure:
               address: ":443"
-          api:
-            insecure: true
           ping: {}
           providers:
+            file:
+              filename: {{ env "NOMAD_TASK_DIR" }}/dynamic-config.yaml
             consulCatalog:
+              cache: true
+              connectAware: true
+              connectByDefault: true
+              defaultRule: "Host(`{{"{{"}} lower .Name {{"}}"}}.service.consul`)"
               endpoint:
                 tls:
                   ca: {{ env "NOMAD_TASK_DIR" }}/ca.pem
-              prefix: traefik
               exposedByDefault: false
-              connectAware: true
-              connectByDefault: true
+              prefix: traefik
+              stale: true
         EOF
+      }
+
+      template {
+        destination   = "${NOMAD_TASK_DIR}/dynamic-config.yaml"
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
+        data          = <<-EOF
+          tls:
+            stores:
+              default:
+                defaultCertificate:
+                  certFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-bundle.pem
+                  keyFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-key.pem
+        EOF
+      }
+
+      vault {
+        policies      = ["traefik"]
+        change_mode   = "signal"
+        change_signal = "SIGHUP"
       }
 
       resources {
