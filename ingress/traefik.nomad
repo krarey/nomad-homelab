@@ -96,6 +96,8 @@ job "traefik" {
               exposedByDefault: false
               prefix: traefik
               stale: true
+          serversTransport:
+            insecureSkipVerify: true # Traefik pulls IPs from Consul catalog, would need appropriate IP SANs on HTTPS upstreams
         EOT
       }
 
