@@ -50,21 +50,24 @@ job "traefik" {
       }
 
       template {
-        destination   = "${NOMAD_SECRETS_DIR}/wildcard-bundle.pem"
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
-        data          = <<-EOT
+        destination = "${NOMAD_SECRETS_DIR}/wildcard-bundle.pem"
+        change_mode = "script"
+        data        = <<-EOT
           {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
           {{ .Data.certificate }}
           {{ .Data.issuing_ca }}{{ end }}
         EOT
+        change_script {
+          command       = "/bin/touch"
+          args          = ["{{ env \"NOMAD_TASK_DIR\" }}/dynamic-config.yaml"]
+          fail_on_error = true
+        }
       }
 
       template {
-        destination   = "${NOMAD_SECRETS_DIR}/wildcard-key.pem"
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
-        data          = <<-EOT
+        destination = "${NOMAD_SECRETS_DIR}/wildcard-key.pem"
+        change_mode = "noop" # The private key shouldn't rotate without the public certificate
+        data        = <<-EOT
           {{ with secret "pki-inter/issue/traefik" "common_name=*.service.consul" "format=pem" }}
           {{ .Data.private_key }}{{ end }}
         EOT
@@ -85,6 +88,7 @@ job "traefik" {
           providers:
             file:
               filename: {{ env "NOMAD_TASK_DIR" }}/dynamic-config.yaml
+              watch: true
             consulCatalog:
               cache: true
               connectAware: true
@@ -102,10 +106,9 @@ job "traefik" {
       }
 
       template {
-        destination   = "${NOMAD_TASK_DIR}/dynamic-config.yaml"
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
-        data          = <<-EOT
+        destination = "${NOMAD_TASK_DIR}/dynamic-config.yaml"
+        change_mode = "noop" # Traefik watches the dynamic config on its own
+        data        = <<-EOT
           tls:
             stores:
               default:
@@ -123,8 +126,7 @@ job "traefik" {
 
       vault {
         policies      = ["traefik"]
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
+        change_mode   = "noop"
       }
 
       resources {
