@@ -78,7 +78,8 @@ job "traefik" {
         destination = "${NOMAD_TASK_DIR}/traefik.yml"
         data        = <<-EOT
           api:
-            insecure: true
+            insecure: false
+            dashboard: true
           entryPoints:
             web:
               address: ":80"
@@ -116,7 +117,20 @@ job "traefik" {
                   certFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-bundle.pem
                   keyFile: {{ env "NOMAD_SECRETS_DIR" }}/wildcard-key.pem
           http:
+            routers:
+              dashboard:
+                rule: Host(`traefik.service.consul`) && ((PathPrefix(`/api`) || PathPrefix(`/dashboard`)))
+                tls: true
+                service: api@internal
+                entryPoints:
+                  - traefik
+                middlewares:
+                  - auth
             middlewares:
+              auth:
+                digestAuth:
+                  users:
+                    - {{ with nomadVar "nomad/jobs/traefik/traefik/traefik" }}{{ .adminUser }}{{ end }}
               redirect-https:
                 redirectScheme:
                   scheme: https
