@@ -2,6 +2,11 @@ job "traefik" {
   datacenters = ["byb", "x86"]
   type        = "system"
 
+  update {
+    max_parallel = 2
+    stagger      = "30s"
+  }
+
   group "traefik" {
     network {
       mode = "bridge"
@@ -139,8 +144,8 @@ job "traefik" {
       }
 
       vault {
-        policies      = ["traefik"]
-        change_mode   = "noop"
+        policies    = ["traefik"]
+        change_mode = "noop"
       }
 
       resources {
