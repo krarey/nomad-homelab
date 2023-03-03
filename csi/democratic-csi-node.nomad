@@ -1,6 +1,5 @@
 job "democratic-node" {
-  datacenters = ["byb"]
-  type        = "system"
+  type = "system"
 
   group "node" {
     task "node" {

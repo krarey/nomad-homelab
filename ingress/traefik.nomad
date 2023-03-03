@@ -1,6 +1,5 @@
 job "traefik" {
-  datacenters = ["byb", "x86"]
-  type        = "system"
+  type = "system"
 
   update {
     max_parallel = 2
