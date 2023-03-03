@@ -7,7 +7,7 @@ job "democratic-controller" {
       driver = "docker"
 
       config {
-        image = "democraticcsi/democratic-csi:v1.6.3"
+        image = "democraticcsi/democratic-csi:v1.8.1"
 
         args = [
           "--csi-version=1.2.0",
@@ -64,7 +64,7 @@ job "democratic-controller" {
 
       resources {
         cpu    = 30
-        memory = 50
+        memory = 128
       }
     }
   }

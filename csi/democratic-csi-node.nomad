@@ -7,7 +7,7 @@ job "democratic-node" {
       driver = "docker"
 
       config {
-        image        = "democraticcsi/democratic-csi:v1.6.3"
+        image        = "democraticcsi/democratic-csi:v1.8.1"
         network_mode = "host"
         ipc_mode     = "host"
         privileged   = true
