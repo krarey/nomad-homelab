@@ -12,7 +12,7 @@ job "democratic-node" {
         privileged   = true
 
         args = [
-          "--csi-version=1.2.0",
+          "--csi-version=1.5.0",
           "--csi-name=org.democratic-csi.synology-iscsi",
           "--driver-config-file=${NOMAD_SECRETS_DIR}/driver-config-file.yaml",
           "--log-level=debug",
@@ -25,6 +25,13 @@ job "democratic-node" {
           target   = "/host"
           source   = "/"
           readonly = false
+        }
+
+        mount {
+          type     = "bind"
+          target   = "/run/udev"
+          source   = "/run/udev"
+          readonly = true
         }
       }
 
