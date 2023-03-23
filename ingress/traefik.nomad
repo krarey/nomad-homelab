@@ -41,7 +41,7 @@ job "traefik" {
       driver = "docker"
 
       config {
-        image = "traefik:v2.9.8"
+        image = "traefik:v2.9.9"
         volumes = [
           "local/traefik.yml:/etc/traefik/traefik.yml",
         ]
@@ -63,7 +63,7 @@ job "traefik" {
         EOT
         change_script {
           command       = "/bin/touch"
-          args          = ["{{ env \"NOMAD_TASK_DIR\" }}/dynamic-config.yaml"]
+          args          = ["${NOMAD_TASK_DIR}/dynamic-config.yaml"]
           fail_on_error = true
         }
       }
@@ -89,6 +89,8 @@ job "traefik" {
               address: ":80"
             websecure:
               address: ":443"
+          log:
+            level: INFO
           ping: {}
           providers:
             file:
