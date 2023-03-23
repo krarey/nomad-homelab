@@ -95,6 +95,26 @@ scrape_configs:
         - "prometheus"
     tls_config:
       ca_file: "/local/ca.pem"
-    static_configs:
-      - targets:
-        - consul.service.consul:8501
+    consul_sd_configs:
+      - server: "consul.service.consul:8501"
+        scheme: "https"
+        datacenter: "byb"
+        tls_config:
+          ca_file: "/local/ca.pem"
+        services:
+          - "consul"
+    relabel_configs:
+      - source_labels:
+          - __address__
+        regex: (.+):8300
+        replacement: ${1}:8501
+        target_label: __address__
+  - job_name: "consul-exporter"
+    consul_sd_configs:
+      - server: "consul.service.consul:8501"
+        scheme: "https"
+        datacenter: "byb"
+        tls_config:
+          ca_file: "/local/ca.pem"
+        services:
+          - "prometheus-consul-exporter"
