@@ -95,6 +95,7 @@ scrape_configs:
         - "prometheus"
     tls_config:
       ca_file: "/local/ca.pem"
+      server_name: "consul.service.consul"
     consul_sd_configs:
       - server: "consul.service.consul:8501"
         scheme: "https"
