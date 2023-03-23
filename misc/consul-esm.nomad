@@ -2,7 +2,7 @@ job "consul-esm" {
   datacenters = ["byb"]
 
   group "consul-esm" {
-    count = 2
+    count = 1
 
     constraint {
       operator = "distinct_hosts"
@@ -22,8 +22,13 @@ job "consul-esm" {
       driver = "docker"
 
       config {
-        image = "hashicorp/consul-esm:0.6.0"
-        args  = ["-config-file=${NOMAD_SECRETS_DIR}/consul-esm.hcl"]
+        image = "hashicorp/consul-esm:0.7.1"
+      }
+
+      artifact {
+        source      = "https://vault.service.consul:8200/v1/pki-root/ca/pem"
+        destination = "${NOMAD_TASK_DIR}/ca.pem"
+        mode        = "file"
       }
 
       resources {
@@ -37,20 +42,16 @@ job "consul-esm" {
       }
 
       vault {
-        policies      = ["consul-esm"]
-        change_mode   = "restart"
+        policies    = ["consul-esm"]
+        change_mode = "restart"
       }
 
       template {
-        destination = "secrets/consul-esm.hcl"
+        destination = "${NOMAD_SECRETS_DIR}/consul.env"
+        env         = true
         data        = <<-EOT
-          // The address of the local Consul agent. Can also be provided through the
-          // CONSUL_HTTP_ADDR environment variable.
-          http_addr = "unix://{{ env "NOMAD_SECRETS_DIR" }}/consul/consul.sock"
-
-          // The ACL token to use when communicating with the local Consul agent. Can
-          // also be provided through the CONSUL_HTTP_TOKEN environment variable.
-          token = "{{ with secret "consul/creds/consul-esm" }}{{ .Data.token }}{{ end }}"
+          CONSUL_HTTP_ADDR = "unix://{{ env "NOMAD_SECRETS_DIR" }}/consul/consul.sock"
+          CONSUL_HTTP_TOKEN = "{{ with secret "consul/creds/consul-esm" }}{{ .Data.token }}{{ end }}"
         EOT
       }
     }
