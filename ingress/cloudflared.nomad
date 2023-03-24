@@ -1,65 +1,42 @@
 job "cloudflare-tunnel" {
   datacenters = ["byb"]
-  type        = "system"
 
   group "cloudflared" {
+    count = 2
     network {
-      port "metrics" {}
+      mode = "bridge"
     }
 
     service {
       name = "cloudflare-tunnel"
-      port = "metrics"
+      port = 8080
 
       check {
         type     = "http"
-        port     = "metrics"
+        expose   = true
         path     = "/ready"
         interval = "10s"
-        timeout  = "2s"
+        timeout  = "4s"
       }
     }
 
     task "cloudflared" {
-      driver = "exec"
+      driver = "docker"
 
       config {
-        command = "cloudflared-linux-arm"
-        args    = ["tunnel", "--config", "${NOMAD_TASK_DIR}/config.yml", "run"]
+        image = "cloudflare/cloudflared:latest"
+        args = [
+          "tunnel",
+          "--no-autoupdate",
+          "--metrics",
+          "0.0.0.0:8080",
+          "run"
+        ]
       }
-
-      artifact {
-        source = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
-      }
-
       template {
-        destination = "secrets/tunnel.json"
-        data        = <<-EOT
-        {
-          "AccountTag": "755a069db2dd82aaafcea6940be92ed1",
-          "TunnelSecret": "{{ with secret "kv/cloudflare/nomad" }}{{ .Data.data.secret }}{{ end }}",
-          "TunnelID": "267c5f44-0933-4077-bbf8-d1568b2d6624",
-          "TunnelName": "nomad"
-        }
-        EOT
-      }
-
-      template {
-        destination = "local/config.yml"
-        data        = <<-EOT
-        tunnel: 267c5f44-0933-4077-bbf8-d1568b2d6624
-        credentials-file: {{ env "NOMAD_SECRETS_DIR" }}/tunnel.json
-        metrics: 0.0.0.0:{{ env "NOMAD_PORT_metrics" }}
-        no-autoupdate: true
-        ingress:
-          - service: http://localhost:80
-        EOT
-      }
-
-      vault {
-        policies      = ["cloudflare-tunnels"]
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
+        destination = "${NOMAD_SECRETS_DIR}/cloudflared.env"
+        env         = true
+        data        = "TUNNEL_TOKEN={{ with nomadVar \"nomad/jobs/cloudflare-tunnel\" }}{{ .token }}{{ end }}"
       }
     }
   }
