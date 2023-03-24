@@ -15,6 +15,7 @@ job "boundary-worker" {
         interval = "10s"
         timeout  = "4s"
       }
+      # Let our connect sidecar scrape config pick up boundary worker metrics, too
       meta {
         metrics_port = NOMAD_HOST_PORT_boundary_metrics
       }
@@ -38,8 +39,8 @@ job "boundary-worker" {
         ]
       }
       resources {
-        cpu    = 500 # 500 MHz
-        memory = 256 # 256MB
+        cpu    = 500
+        memory = 128
       }
       template {
         destination = "${NOMAD_TASK_DIR}/boundary.hcl"
@@ -48,6 +49,9 @@ job "boundary-worker" {
 
           hcp_boundary_cluster_id = "{{ with nomadVar "nomad/jobs/boundary-worker" }}{{ .boundary_cluster_id }}{{ end }}"
 
+          # This is an HCP worker, and thus supports multihop via tunneling.
+          # I don't intend to expose this to ingress traffic, just egress to my internal targets.
+          # Therefore, bind the proxy listener to loopback.
           listener "tcp" {
             address = "127.0.0.1:9202"
             purpose = "proxy"
@@ -60,6 +64,8 @@ job "boundary-worker" {
           }
 
           worker {
+            # Store PKI credentials in the ephemeral disk.
+            # Makes a best effort to retain worker authorization across restarts/deployments.
             auth_storage_path = "{{ env "NOMAD_ALLOC_DIR" }}/data"
             tags {
               type    = ["hosted-worker", "private"]
