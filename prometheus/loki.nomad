@@ -14,6 +14,8 @@ job "loki" {
       attachment_mode = "file-system"
     }
 
+    # Until prometheus/promtail can connect to Consul using a Unix domain socket
+    # I have to expose the Loki service to the outer network :[
     service {
       name = "loki"
       port = 3100
@@ -58,7 +60,7 @@ job "loki" {
     task "loki" {
       driver = "docker"
       config {
-        image = "grafana/loki:2.6.0"
+        image = "grafana/loki:2.7.4"
       }
       volume_mount {
         volume      = "synology"
