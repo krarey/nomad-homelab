@@ -4,11 +4,6 @@ job "prometheus" {
   group "prometheus" {
     network {
       mode = "bridge"
-      # Exposed for Consul metrics proxy, which doesn't pass HTTP Host header
-      # Otherwise this could be removed and metrics queried via Traefik ingress
-      port "prometheus" {
-        static = 9090
-      }
     }
 
     volume "synology" {
@@ -82,7 +77,7 @@ job "prometheus" {
 
       artifact {
         source      = "https://vault.service.consul:8200/v1/pki-root/ca/pem"
-        destination = "local/ca.pem"
+        destination = "${NOMAD_TASK_DIR}/ca.pem"
         mode        = "file"
       }
 
@@ -90,7 +85,7 @@ job "prometheus" {
         data          = "{{ key \"prometheus/config\" }}"
         change_mode   = "signal"
         change_signal = "SIGHUP"
-        destination   = "local/config/prometheus.yml"
+        destination   = "${NOMAD_TASK_DIR}/config/prometheus.yml"
       }
 
       resources {
