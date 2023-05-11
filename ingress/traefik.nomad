@@ -63,7 +63,7 @@ job "traefik" {
         EOT
         change_script {
           command       = "/bin/touch"
-          args          = ["${NOMAD_TASK_DIR}/dynamic-config.yaml"]
+          args          = ["/local/dynamic-config.yaml"]
           fail_on_error = true
         }
       }
