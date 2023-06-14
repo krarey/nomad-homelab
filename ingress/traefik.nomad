@@ -109,10 +109,10 @@ job "traefik" {
               stale: true
           serversTransport:
             insecureSkipVerify: true # Traefik pulls IPs from Consul catalog, would need appropriate IP SANs on HTTPS upstreams
-          tracing:
-            serviceName: traefik
-            zipkin:
-              httpEndpoint: http://tempo.service.consul:9411/api/v2/spans
+          # tracing:
+          #   serviceName: traefik
+          #   zipkin:
+          #     httpEndpoint: http://tempo.service.consul:9411/api/v2/spans
         EOT
       }
 
