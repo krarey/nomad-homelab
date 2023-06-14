@@ -47,7 +47,7 @@ job "grafana" {
     task "grafana" {
       driver = "docker"
       config {
-        image = "grafana/grafana:9.0.2"
+        image = "grafana/grafana:9.5.1"
         volumes = [
           "local/config/grafana.ini:/etc/grafana/grafana.ini",
         ]
@@ -61,7 +61,7 @@ job "grafana" {
       template {
         data = <<-EOT
           [feature_toggles]
-          enable = tempoSearch tempoBackendSearch
+          enable = traceqlSearch
         EOT
 
         change_mode   = "signal"
