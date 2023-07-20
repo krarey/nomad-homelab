@@ -39,7 +39,7 @@ job "prometheus-consul-exporter" {
 
       resources {
         cpu    = 200
-        memory = 12
+        memory = 24
       }
     }
   }
