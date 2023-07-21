@@ -81,6 +81,7 @@ job "consul-terraform-sync" {
           driver "terraform" {
             log         = false
             persist_log = false
+            version     = "1.2.9"
 
             backend "consul" {
               gzip = true
