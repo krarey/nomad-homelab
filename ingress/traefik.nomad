@@ -149,7 +149,6 @@ job "traefik" {
       }
 
       vault {
-        policies    = ["traefik"]
         change_mode = "noop"
       }
 
