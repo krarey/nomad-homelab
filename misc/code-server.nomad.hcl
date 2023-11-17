@@ -85,11 +85,10 @@ job "code-server" {
       template {
         destination = "${NOMAD_SECRETS_DIR}/code-server.env"
         env         = true
-        data        = "{{ with secret \"kv/code-server\" }}PASSWORD={{ .Data.data.password }}{{ end }}"
+        data        = "{{ with secret \"kv/default/code-server\" }}PASSWORD={{ .Data.data.password }}{{ end }}"
       }
 
       vault {
-        policies    = ["code-server"]
         change_mode = "noop"
       }
 
