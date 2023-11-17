@@ -63,13 +63,10 @@ job "valheim" {
       }
       template {
         data        = <<-EOT
-          SERVER_PASS="{{ with secret "kv/valheim" }}{{ .Data.data.server_password }}{{ end }}"
+          SERVER_PASS="{{ with nomadVar "nomad/jobs/valheim" }}{{ .server_password }}{{ end }}"
         EOT
         destination = "${NOMAD_SECRETS_DIR}/valheim.env"
         env         = true
-      }
-      vault {
-        policies = ["valheim"]
       }
       volume_mount {
         volume      = "valheim_data"
