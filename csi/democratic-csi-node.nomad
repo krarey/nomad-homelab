@@ -44,20 +44,8 @@ job "democratic-node" {
       template {
         destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
 
-        # TODO: Presumably the node shouldn't need access to the Synology API. See if this can be cut down.
         data = <<-EOT
           driver: synology-iscsi
-          httpConnection:
-            protocol: https
-            host: foundation.byb.lan
-            port: 5001
-            username: nomad
-            password: "{{ with secret "kv/csi_iscsi" }}{{ .Data.data.password }}{{ end }}"
-            allowInsecure: true
-            session: democratic-csi
-            serialize: true
-          synology:
-            volume: /volume1
           iscsi:
             targetPortal: foundation.byb.lan
             baseiqn: "iqn.2000-01.com.synology:csi."
@@ -70,12 +58,6 @@ job "democratic-node" {
               auth_type: 0
               max_sessions: 0
         EOT
-      }
-
-      vault {
-        policies      = ["csi-iscsi"]
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
       }
 
       resources {

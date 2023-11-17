@@ -36,7 +36,7 @@ job "democratic-controller" {
             host: foundation.byb.lan
             port: 5001
             username: nomad
-            password: "{{ with secret "kv/csi_iscsi" }}{{ .Data.data.password }}{{ end }}"
+            password: "{{ with secret "kv/default/democratic-controller" }}{{ .Data.data.synology_password }}{{ end }}"
             allowInsecure: true
             session: democratic-csi
             serialize: true
@@ -57,7 +57,6 @@ job "democratic-controller" {
       }
 
       vault {
-        policies      = ["csi-iscsi"]
         change_mode   = "signal"
         change_signal = "SIGHUP"
       }
