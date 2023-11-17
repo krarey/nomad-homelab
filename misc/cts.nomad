@@ -36,14 +36,13 @@ job "consul-terraform-sync" {
         destination = "${NOMAD_SECRETS_DIR}/consul"
       }
       vault {
-        policies    = ["consul-terraform-sync"]
         change_mode = "restart"
       }
       template {
         destination = "${NOMAD_SECRETS_DIR}/terraformrc"
         data = <<-EOT
           credentials "app.terraform.io" {
-            token = "{{ with secret "kv/terraform-cloud" }}{{ .Data.data.token }}{{ end }}"
+            token = "{{ with secret "kv/default/consul-terraform-sync" }}{{ .Data.data.tfc_token }}{{ end }}"
           }
         EOT
       }
@@ -51,14 +50,15 @@ job "consul-terraform-sync" {
         destination = "${NOMAD_SECRETS_DIR}/cts.env"
         env         = true
         data        = <<-EOT
-          {{ with secret "kv/unifi" }}
+          {{ with secret "kv/default/consul-terraform-sync" }}
           UNIFI_INSECURE=true
           UNIFI_API="https://unifi.byb.lan"
-          UNIFI_USERNAME="{{ .Data.data.username }}"
-          UNIFI_PASSWORD="{{ .Data.data.password }}"
+          UNIFI_USERNAME="{{ .Data.data.unifi_username }}"
+          UNIFI_PASSWORD="{{ .Data.data.unifi_password }}"
           {{ end }}
         EOT
       }
+      # TODO: Migrate Consul credentials to Nomad workload identity
       template {
         destination = "${NOMAD_SECRETS_DIR}/cts.hcl"
         data        = <<-EOT
