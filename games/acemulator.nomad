@@ -2,7 +2,6 @@ job "acemulator" {
   datacenters = ["x86"]
 
   vault {
-    policies      = ["acemulator"]
     change_mode   = "signal"
     change_signal = "SIGHUP"
   }
@@ -50,8 +49,8 @@ job "acemulator" {
       }
       template {
         data        = <<-EOT
-          MYSQL_ROOT_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
-          MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
+          MYSQL_ROOT_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
+          MYSQL_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
         EOT
         destination = "${NOMAD_SECRETS_DIR}/mysql.env"
         env         = true
@@ -164,7 +163,7 @@ job "acemulator" {
       }
       template {
         data        = <<-EOT
-          MYSQL_PASSWORD="{{ with secret "kv/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
+          MYSQL_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
         EOT
         destination = "${NOMAD_SECRETS_DIR}/mysql.env"
         env         = true
