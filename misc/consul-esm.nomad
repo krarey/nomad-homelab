@@ -42,7 +42,6 @@ job "consul-esm" {
       }
 
       vault {
-        policies    = ["consul-esm"]
         change_mode = "restart"
       }
 
