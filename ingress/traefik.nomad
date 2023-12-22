@@ -97,7 +97,6 @@ job "traefik" {
               filename: {{ env "NOMAD_TASK_DIR" }}/dynamic-config.yaml
               watch: true
             consulCatalog:
-              cache: true
               connectAware: true
               connectByDefault: true
               defaultRule: "Host(`{{"{{"}} lower .Name {{"}}"}}.service.consul`)"
