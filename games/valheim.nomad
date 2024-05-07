@@ -49,8 +49,8 @@ job "valheim" {
         SERVER_NAME   = "Valheimestry"
         WORLD_NAME    = "valheimestry"
         SERVER_PUBLIC = "false"
-        RESTART_CRON  = "0 10 * * *"
         UPDATE_CRON   = "0 */3 * * *"
+        TZ            = "America/New_York"
         PUID          = 1024
         PGID          = 1024
       }
@@ -58,8 +58,8 @@ job "valheim" {
         image = "ghcr.io/lloesche/valheim-server"
       }
       resources {
-        cpu    = 6000
-        memory = 8192
+        cpu    = 5800
+        memory = 6144
       }
       template {
         data        = <<-EOT
