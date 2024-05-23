@@ -38,21 +38,20 @@ job "acemulator" {
     task "mariadb" {
       driver = "docker"
       env {
-        MYSQL_USER     = "acedockeruser"
-        MYSQL_DATABASE = "ace%"
+        MARIADB_USER = "acedockeruser"
       }
       config {
-        image = "mariadb:10.8.3"
+        image = "mariadb:11.3"
       }
       resources {
         memory = 512
       }
       template {
         data        = <<-EOT
-          MYSQL_ROOT_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
-          MYSQL_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
+          MARIADB_ROOT_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_root }}{{ end }}"
+          MARIADB_PASSWORD="{{ with secret "kv/default/acemulator" }}{{ .Data.data.mysql_user }}{{ end }}"
         EOT
-        destination = "${NOMAD_SECRETS_DIR}/mysql.env"
+        destination = "${NOMAD_SECRETS_DIR}/mariadb.env"
         env         = true
       }
       volume_mount {
@@ -149,8 +148,8 @@ job "acemulator" {
         ACE_SQL_WORLD_DATABASE_NAME           = "ace_world"
         ACE_SQL_WORLD_DATABASE_HOST           = "localhost"
         ACE_SQL_WORLD_DATABASE_PORT           = 3306
-        ACE_SQL_INITIALIZE_DATABASES          = true
-        ACE_SQL_DOWNLOAD_LATEST_WORLD_RELEASE = true
+        ACE_SQL_INITIALIZE_DATABASES          = false
+        ACE_SQL_DOWNLOAD_LATEST_WORLD_RELEASE = false
         ACE_NONINTERACTIVE_CONSOLE            = true
         MYSQL_USER                            = "acedockeruser"
       }
