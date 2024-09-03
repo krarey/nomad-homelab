@@ -14,7 +14,7 @@ job "consul-terraform-sync" {
     task "agent" {
       driver = "docker"
       config {
-        image = "hashicorp/consul-terraform-sync:0.7.0"
+        image = "hashicorp/consul-terraform-sync:0.7"
         args = [
           "consul-terraform-sync",
           "start",
@@ -81,7 +81,7 @@ job "consul-terraform-sync" {
           driver "terraform" {
             log         = false
             persist_log = false
-            version     = "1.2.9"
+            version     = "1.6.2"
 
             backend "consul" {
               gzip = true
