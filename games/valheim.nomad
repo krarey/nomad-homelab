@@ -1,35 +1,19 @@
 job "valheim" {
-  datacenters = ["x86"]
+  datacenters = ["byb"]
+  
+  constraint {
+    attribute = "${attr.cpu.arch}"
+    value     = "amd64"
+  }
 
-  group "valheim" {
+  group "game" {
     network {
       mode = "bridge"
       port "game1" {
-        to = 2456
+        static = 2456
       }
       port "game2" {
-        to = 2457
-      }
-    }
-
-    service {
-      name = "valheim"
-      port = "game1"
-      tags = ["game1"]
-      # Port-forward hinting for Consul-Terraform Sync
-      meta {
-        unifi-port-forward = "2456"
-        unifi-proto        = "udp"
-      }
-    }
-
-    service {
-      name = "valheim"
-      port = "game2"
-      tags = ["game2"]
-      meta {
-        unifi-port-forward = "2457"
-        unifi-proto        = "udp"
+        static = 2457
       }
     }
 
@@ -43,7 +27,7 @@ job "valheim" {
       source = "valheim_config"
     }
 
-    task "valheim-server" {
+    task "server" {
       driver = "docker"
       env {
         SERVER_NAME   = "Valheimestry"
