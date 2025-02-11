@@ -29,6 +29,11 @@ job "valheim" {
 
     task "server" {
       driver = "docker"
+      service {
+        name     = "valheim"
+        provider = "nomad"
+        port     = "game1"
+      }
       env {
         SERVER_NAME   = "Valheimestry"
         WORLD_NAME    = "valheimestry"
