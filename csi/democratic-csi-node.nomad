@@ -1,42 +1,33 @@
-job "democratic-node" {
+job "democratic-csi-node" {
   type = "system"
 
-  group "node" {
-    task "node" {
-      driver = "docker"
+  group "nfs" {
+    task "plugin" {
+      driver = "podman"
 
       config {
-        image        = "democraticcsi/democratic-csi:v1.8.1"
+        image        = "ghcr.io/democratic-csi/democratic-csi:v1.9.3"
         network_mode = "host"
-        ipc_mode     = "host"
         privileged   = true
 
+        cap_add = [ "SYS_ADMIN" ]
+
         args = [
-          "--csi-version=1.5.0",
-          "--csi-name=org.democratic-csi.synology-iscsi",
+          "--csi-version=1.9.0",
+          "--csi-name=org.democratic-csi.freenas-api-nfs",
           "--driver-config-file=${NOMAD_SECRETS_DIR}/driver-config-file.yaml",
-          "--log-level=debug",
           "--csi-mode=node",
           "--server-socket=/csi-data/csi.sock",
         ]
 
-        mount {
-          type     = "bind"
-          target   = "/host"
-          source   = "/"
-          readonly = false
-        }
-
-        mount {
-          type     = "bind"
-          target   = "/run/udev"
-          source   = "/run/udev"
-          readonly = true
-        }
+        volumes = [
+          "/:/host",
+          "/run/udev:/run/udev:ro",
+        ]
       }
 
       csi_plugin {
-        id        = "synology-iscsi"
+        id        = "truenas-nfs"
         type      = "node"
         mount_dir = "/csi-data"
       }
@@ -45,18 +36,16 @@ job "democratic-node" {
         destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
 
         data = <<-EOT
-          driver: synology-iscsi
-          iscsi:
-            targetPortal: foundation.byb.lan
-            baseiqn: "iqn.2000-01.com.synology:csi."
-            lunTemplate:
-              type: "BLUN"
-            lunSnapshotTemplate:
-              is_locked: true
-              is_app_consistent: true
-            targetTemplate:
-              auth_type: 0
-              max_sessions: 0
+          driver: freenas-api-nfs
+          nfs:
+            shareHost: truenas.byb.lan
+            shareAlldirs: false
+            shareAllowedHosts: []
+            shareAllowedNetworks: []
+            shareMaprootUser: root
+            shareMaprootGroup: root
+            shareMapallUser: ""
+            shareMapallGroup: ""
         EOT
       }
 
@@ -66,4 +55,5 @@ job "democratic-node" {
       }
     }
   }
+  # TODO: Add iSCSI controller group
 }

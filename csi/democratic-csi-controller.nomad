@@ -1,19 +1,19 @@
-job "democratic-controller" {
+job "democratic-csi-controller" {
   datacenters = ["byb"]
   type        = "service"
 
-  group "controller" {
-    task "controller" {
-      driver = "docker"
+  group "nfs" {
+    count = 2
+    task "plugin" {
+      driver = "podman"
 
       config {
-        image = "democraticcsi/democratic-csi:v1.8.1"
+        image = "ghcr.io/democratic-csi/democratic-csi:v1.9.3"
 
         args = [
-          "--csi-version=1.5.0",
-          "--csi-name=org.democratic-csi.synology-iscsi",
+          "--csi-version=1.9.0",
+          "--csi-name=org.democratic-csi.freenas-api-nfs",
           "--driver-config-file=${NOMAD_SECRETS_DIR}/driver-config-file.yaml",
-          "--log-level=debug",
           "--csi-mode=controller",
           "--server-socket=/csi-data/csi.sock",
           "--server-address=0.0.0.0",
@@ -22,7 +22,7 @@ job "democratic-controller" {
       }
 
       csi_plugin {
-        id        = "synology-iscsi"
+        id        = "truenas-nfs"
         type      = "controller"
         mount_dir = "/csi-data"
       }
@@ -30,41 +30,39 @@ job "democratic-controller" {
       template {
         destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
         data        = <<-EOT
-          driver: synology-iscsi
+          driver: freenas-api-nfs
           httpConnection:
             protocol: https
-            host: foundation.byb.lan
-            port: 5001
-            username: nomad
-            password: "{{ with secret "kv/default/democratic-controller" }}{{ .Data.data.synology_password }}{{ end }}"
+            host: truenas.byb.lan
+            port: 443
+            apiKey: {{ with nomadVar "nomad/jobs/democratic-csi-controller" }}{{ .truenas_api_key }}{{ end }}
             allowInsecure: true
-            session: democratic-csi
-            serialize: true
-          synology:
-            volume: /volume1
-          iscsi:
-            targetPortal: foundation.byb.lan
-            baseiqn: "iqn.2000-01.com.synology:csi."
-            lunTemplate:
-              type: "BLUN"
-            lunSnapshotTemplate:
-              is_locked: true
-              is_app_consistent: true
-            targetTemplate:
-              auth_type: 0
-              max_sessions: 0
+            apiVersion: 2
+          zfs:
+            datasetParentName: default/nomad/byb/volumes
+            detachedSnapshotsDatasetParentName: default/nomad/byb/snapshots
+            datasetEnableQuotas: true
+            datasetEnableReservation: false
+            datasetPermissionsMode: "0777"
+            datasetPermissionsUser: 0
+            datasetPermissionsGroup: 0
+          nfs:
+            shareHost: truenas.byb.lan
+            shareAlldirs: false
+            shareAllowedHosts: []
+            shareAllowedNetworks: []
+            shareMaprootUser: root
+            shareMaprootGroup: root
+            shareMapallUser: ""
+            shareMapallGroup: ""
         EOT
       }
 
-      vault {
-        change_mode   = "signal"
-        change_signal = "SIGHUP"
-      }
-
       resources {
-        cpu    = 30
+        cpu    = 100
         memory = 128
       }
     }
   }
+  # TODO: Add iSCSI controller group
 }
