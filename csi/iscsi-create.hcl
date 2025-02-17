@@ -1,9 +1,9 @@
 type         = "csi"
-id           = "prometheus-iscsi"
-name         = "prometheus-iscsi"
-plugin_id    = "synology-iscsi"
-capacity_min = "10GiB"
-capacity_max = "10GiB"
+id           = "forgejo-data"
+name         = "forgejo-data"
+plugin_id    = "truenas-iscsi"
+capacity_min = "1GiB"
+capacity_max = "1GiB"
 
 capability {
   access_mode     = "single-node-writer"
