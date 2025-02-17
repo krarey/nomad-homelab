@@ -59,6 +59,11 @@ job "coredns" {
           }
           EOF
       }
+
+      resources {
+        cpu    = 100
+        memory = 64
+      }
     }
   }
 }
