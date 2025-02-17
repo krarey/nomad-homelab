@@ -64,5 +64,66 @@ job "democratic-csi-controller" {
       }
     }
   }
-  # TODO: Add iSCSI controller group
+
+  group "iscsi" {
+    count = 2
+    task "plugin" {
+      driver = "podman"
+
+      config {
+        image = "ghcr.io/democratic-csi/democratic-csi:v1.9.3"
+
+        args = [
+          "--csi-version=1.9.0",
+          "--csi-name=org.democratic-csi.freenas-api-iscsi",
+          "--driver-config-file=${NOMAD_SECRETS_DIR}/driver-config-file.yaml",
+          "--csi-mode=controller",
+          "--server-socket=/csi-data/csi.sock",
+          "--server-address=0.0.0.0",
+          "--server-port=9000",
+        ]
+      }
+
+      csi_plugin {
+        id        = "truenas-iscsi"
+        type      = "controller"
+        mount_dir = "/csi-data"
+      }
+
+      template {
+        destination = "${NOMAD_SECRETS_DIR}/driver-config-file.yaml"
+        data        = <<-EOT
+          driver: freenas-api-iscsi
+          httpConnection:
+            protocol: https
+            host: truenas.byb.lan
+            port: 443
+            apiKey: {{ with nomadVar "nomad/jobs/democratic-csi-controller" }}{{ .truenas_api_key }}{{ end }}
+            allowInsecure: true
+            apiVersion: 2
+          zfs:
+            datasetParentName: default/nomad/byb/volumes
+            detachedSnapshotsDatasetParentName: default/nomad/byb/snapshots
+            zvolCompression: "" # inherit
+            zvolDedup: "" # inherit
+            zvolEnableReservation: false
+          iscsi:
+            targetPortal: truenas.byb.lan
+            targetGroups:
+              - targetGroupPortalGroup: 1
+                targetGroupInitiatorGroup: 1
+                targetGroupAuthType: None
+            extentInsecureTpc: true
+            extentXenCompat: false
+            extentDisablePhysicalBlocksize: true
+            extentRpm: "7200"
+        EOT
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
+    }
+  }
 }
